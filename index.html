@@ -18,6 +18,62 @@
         .result p { margin: 8px 0; font-size: 15px; display: flex; justify-content: space-between; }
         .green { color: #00ff7f; font-weight: bold; }
         .red { color: #ff4d4d; font-weight: bold; }
+
+        /* Стилі для баннера каналу */
+        .channel-banner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 20px;
+            padding: 12px 15px;
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 1px solid #24a1de;
+            border-radius: 10px;
+            text-decoration: none;
+            color: #fff;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .channel-banner:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(36, 161, 222, 0.35);
+        }
+        .banner-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .channel-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #24a1de;
+            background-color: #24a1de;
+        }
+        .channel-info {
+            display: flex;
+            flex-direction: column;
+        }
+        .channel-title {
+            font-size: 13px;
+            font-weight: bold;
+            color: #fff;
+        }
+        .channel-sub {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 2px;
+        }
+        .tg-btn {
+            background-color: #24a1de;
+            color: #fff;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 8px 12px;
+            border-radius: 20px;
+            white-space: nowrap;
+            box-shadow: 0 2px 8px rgba(36, 161, 222, 0.4);
+        }
     </style>
 </head>
 <body>
@@ -41,12 +97,22 @@
 
     <div class="result">
         <p>Ставка на Команду 2: <b>$<span id="stake2">0</span></b></p>
-        <p>Власні витрати (кліше): <b>$<span id="totalCost">0</span></b></p>
+        <p>Власні витрати: <b>$<span id="totalCost">0</span></b></p>
         <p>Гарантована виплата: <b>$<span id="payout">0</span></b></p>
         <p>Чистий прибуток: <b>$<span id="profit" class="green">0</span></b></p>
-        <p id="convBlock" style="display:none;">Конвертація фрибету: <b><span id="conversion" class="green">0</span>%</b></p>
         <p>ROI від витрат: <b><span id="roi" class="green">0</span>%</b></p>
     </div>
+
+    <a href="https://t.me/airdrop_crypto_ukraine" target="_blank" class="channel-banner">
+        <div class="banner-left">
+            <img src="file_0000000090547243bcb1e3c39a939062" alt="Logo" class="channel-avatar" onerror="this.onerror=null; this.src='https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg';">
+            <div class="channel-info">
+                <span class="channel-title">Крипта: airdrop-и</span>
+                <span class="channel-sub">Наш Telegram-канал</span>
+            </div>
+        </div>
+        <div class="tg-btn">by @airdrop_crypto</div>
+    </a>
 </div>
 
 <script>
@@ -82,16 +148,6 @@ function calculate() {
         let roiElem = document.getElementById('roi');
         roiElem.innerText = roi.toFixed(2);
         roiElem.className = roi >= 0 ? 'green' : 'red';
-
-        let convBlock = document.getElementById('convBlock');
-        if (isFreebet) {
-            let conversion = (profit / s1) * 100;
-            document.getElementById('conversion').innerText = conversion.toFixed(1);
-            document.getElementById('conversion').className = conversion >= 0 ? 'green' : 'red';
-            convBlock.style.display = 'flex';
-        } else {
-            convBlock.style.display = 'none';
-        }
     }
 }
 calculate();
