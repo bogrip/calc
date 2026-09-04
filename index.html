@@ -9,8 +9,11 @@
         .card { max-width: 400px; margin: auto; background: #1e1e1e; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
         h2 { text-align: center; margin-top: 0; color: #f0b90b; }
         label { display: block; margin-top: 12px; font-size: 14px; color: #ccc; }
-        input { width: 100%; padding: 12px; margin-top: 5px; border-radius: 8px; border: 1px solid #333; background: #2b2b2b; color: #fff; font-size: 16px; box-sizing: border-box; outline: none; }
-        input:focus { border-color: #f0b90b; }
+        input[type="number"] { width: 100%; padding: 12px; margin-top: 5px; border-radius: 8px; border: 1px solid #333; background: #2b2b2b; color: #fff; font-size: 16px; box-sizing: border-box; outline: none; }
+        input[type="number"]:focus { border-color: #f0b90b; }
+        .checkbox-container { display: flex; align-items: center; margin-top: 15px; background: #252525; padding: 10px; border-radius: 8px; cursor: pointer; }
+        .checkbox-container input { width: 20px; height: 20px; margin-right: 10px; accent-color: #f0b90b; cursor: pointer; }
+        .checkbox-container span { font-size: 14px; color: #fff; font-weight: bold; }
         .result { margin-top: 20px; padding: 15px; border-radius: 8px; background: #2a2a2a; }
         .result p { margin: 8px 0; font-size: 15px; display: flex; justify-content: space-between; }
         .green { color: #00ff7f; font-weight: bold; }
@@ -23,20 +26,26 @@
     <h2>Калькулятор Вилок</h2>
     
     <label>Ставка на Команду 1 ($):</label>
-    <input type="number" id="stake1" value="100" oninput="calculate()">
+    <input type="number" id="stake1" value="10" oninput="calculate()">
 
-    <label>Ціна Команди 1 (напр. 0.66 або 66):</label>
-    <input type="number" step="any" id="price1" value="0.66" oninput="calculate()">
+    <label class="checkbox-container">
+        <input type="checkbox" id="isFreebet" onchange="calculate()">
+        <span>Це фрибет (Freebet)</span>
+    </label>
 
-    <label>Ціна Команди 2 (напр. 0.32 або 32):</label>
-    <input type="number" step="any" id="price2" value="0.32" oninput="calculate()">
+    <label>Ціна Команди 1 (напр. 0.50 або 50):</label>
+    <input type="number" step="any" id="price1" value="0.50" oninput="calculate()">
+
+    <label>Ціна Команди 2 (напр. 0.40 або 40):</label>
+    <input type="number" step="any" id="price2" value="0.40" oninput="calculate()">
 
     <div class="result">
         <p>Ставка на Команду 2: <b>$<span id="stake2">0</span></b></p>
-        <p>Загальні витрати: <b>$<span id="totalCost">0</span></b></p>
-        <p>Виплата: <b>$<span id="payout">0</span></b></p>
-        <p>Прибуток: <b>$<span id="profit" class="green">0</span></b></p>
-        <p>ROI: <b><span id="roi" class="green">0</span>%</b></p>
+        <p>Власні витрати (кліше): <b>$<span id="totalCost">0</span></b></p>
+        <p>Гарантована виплата: <b>$<span id="payout">0</span></b></p>
+        <p>Чистий прибуток: <b>$<span id="profit" class="green">0</span></b></p>
+        <p id="convBlock" style="display:none;">Конвертація фрибету: <b><span id="conversion" class="green">0</span>%</b></p>
+        <p>ROI від витрат: <b><span id="roi" class="green">0</span>%</b></p>
     </div>
 </div>
 
@@ -45,17 +54,22 @@ function calculate() {
     let s1 = parseFloat(document.getElementById('stake1').value) || 0;
     let p1 = parseFloat(document.getElementById('price1').value) || 0;
     let p2 = parseFloat(document.getElementById('price2').value) || 0;
+    let isFreebet = document.getElementById('isFreebet').checked;
 
     if (p1 > 1) p1 /= 100;
     if (p2 > 1) p2 /= 100;
 
     if (s1 > 0 && p1 > 0 && p2 > 0) {
-        let contracts = s1 / p1;
-        let s2 = contracts * p2;
-        let totalCost = s1 + s2;
-        let payout = contracts * 1;
+        let grossPayout1 = s1 / p1;
+        let netPayout1 = isFreebet ? (grossPayout1 - s1) : grossPayout1;
+        
+        let s2 = netPayout1 * p2;
+        let cash1 = isFreebet ? 0 : s1;
+        let totalCost = cash1 + s2;
+        
+        let payout = netPayout1;
         let profit = payout - totalCost;
-        let roi = (profit / totalCost) * 100;
+        let roi = totalCost > 0 ? (profit / totalCost) * 100 : 0;
 
         document.getElementById('stake2').innerText = s2.toFixed(2);
         document.getElementById('totalCost').innerText = totalCost.toFixed(2);
@@ -68,6 +82,16 @@ function calculate() {
         let roiElem = document.getElementById('roi');
         roiElem.innerText = roi.toFixed(2);
         roiElem.className = roi >= 0 ? 'green' : 'red';
+
+        let convBlock = document.getElementById('convBlock');
+        if (isFreebet) {
+            let conversion = (profit / s1) * 100;
+            document.getElementById('conversion').innerText = conversion.toFixed(1);
+            document.getElementById('conversion').className = conversion >= 0 ? 'green' : 'red';
+            convBlock.style.display = 'flex';
+        } else {
+            convBlock.style.display = 'none';
+        }
     }
 }
 calculate();
