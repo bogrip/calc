@@ -32,6 +32,9 @@
         .leaderboard th { color: #f0b90b; font-weight: bold; }
 
         .host-stats-card { background: #2a2210; border: 1px solid #f0b90b; padding: 12px; border-radius: 10px; text-align: center; margin-bottom: 15px; font-size: 14px; }
+        .question-box { background: #2a2a2a; border-left: 4px solid #f0b90b; padding: 12px; border-radius: 6px; margin-bottom: 15px; font-size: 16px; line-height: 1.4; }
+        .real-answer-box { background: #1a3320; border: 1px solid #00ff7f; padding: 8px; border-radius: 6px; font-size: 13px; color: #00ff7f; margin-bottom: 12px; }
+        .voter-tag { background: #333; border: 1px solid #555; color: #f0b90b; padding: 2px 8px; border-radius: 12px; font-size: 12px; display: inline-block; margin-right: 4px; margin-top: 4px; }
     </style>
 </head>
 <body>
@@ -65,17 +68,19 @@
     <div id="screen-input" class="screen">
         <div class="status-box" id="role-indicator">---</div>
         
+        <div class="question-box" id="question-text">Завантаження запитання...</div>
+
         <div id="host-inputs" style="display: none;">
-            <label>1. Ваша фейкова відповідь (щоб заплутати):</label>
-            <input type="text" id="host-fake" placeholder="Вигаданий варіант">
-            
-            <label>2. ПРАВИЛЬНА відповідь:</label>
-            <input type="text" id="host-real" placeholder="Справжня відповідь">
+            <div class="real-answer-box">
+                💡 <b>Справжня відповідь з бази:</b> <span id="host-real-answer">---</span>
+            </div>
+            <label>Твоя фейкова відповідь (пастка):</label>
+            <input type="text" id="host-fake" placeholder="Вигадай переконливу брехню">
         </div>
 
         <div id="player-inputs" style="display: none;">
-            <label>Ваша фейкова відповідь:</label>
-            <input type="text" id="player-fake" placeholder="Вигадайте переконливий варіант">
+            <label>Твоя фейкова відповідь:</label>
+            <input type="text" id="player-fake" placeholder="Вигадай переконливий варіант">
         </div>
 
         <button id="submit-answers-btn" onclick="submitAnswers()">Надіслати відповідь</button>
@@ -84,7 +89,8 @@
 
     <!-- ЕКРАН 4: Голосування -->
     <div id="screen-vote" class="screen">
-        <h3>Оберіть правильний варіант:</h3>
+        <div class="question-box" id="vote-question-text">---</div>
+        <h3 id="vote-title">Оберіть правильний варіант:</h3>
         <div id="options-container"></div>
         <div id="vote-wait-msg" class="status-box" style="display:none;">Голос прийнято! Чекаємо підсумків...</div>
     </div>
@@ -103,6 +109,29 @@
 </div>
 
 <script>
+    // База перевірених фактів
+    const questionsDatabase = [
+        { q: "Який птах є єдиним у світі, здатним літати задом наперед?", a: "Колібрі" },
+        { q: "Яка пустеля вважається найсухішою на Землі?", a: "Атакама" },
+        { q: "Який побутовий прилад був першим офіційним продуктом компанії Sony?", a: "Рисоварка" },
+        { q: "Єдиний ссавець, який здатний до справжнього активного польоту:", a: "Кажан" },
+        { q: "Яка тварина має найвищий артеріальний тиск серед усіх живих істот?", a: "Жираф" },
+        { q: "Як називається найглибша відома точка світового океану?", a: "Маріанська западина" },
+        { q: "Який хімічний елемент становить основну масу Сонця?", a: "Водень" },
+        { q: "Назвіть єдиний орган людського тіла, здатний до повної саморегенерації:", a: "Печінка" },
+        { q: "Який шар атмосфери захищає поверхню Землі від згубного випромінювання?", a: "Озоновий шар" },
+        { q: "Яка тварина є найбільшою серед усіх, що коли-небудь існували на Землі?", a: "Синій кит" },
+        { q: "Яка планета Сонячної системи має найбільшу кількість супутників?", a: "Сатурн" },
+        { q: "Який дорогоцінний метал є найрідкішим та найдорожчим у світі?", a: "Родій" },
+        { q: "Яка країна є батьківщиною Олімпійських ігор?", a: "Греція" },
+        { q: "Як називається найвища гірська вершина України?", a: "Говерла" },
+        { q: "Які формені елементи крові відповідають за її зсідання?", a: "Тромбоцити" }
+    ];
+
+    let usedQuestionIndexes = [];
+    let currentQuestion = "";
+    let currentRealAnswer = "";
+
     let peer = null;
     let connMap = {}; 
     let hostConn = null; 
@@ -116,6 +145,16 @@
     let votesSubmitted = {};   
     let currentOptions = [];
     let lastResults = [];
+
+    function getRandomQuestion() {
+        if (usedQuestionIndexes.length >= questionsDatabase.length) {
+            usedQuestionIndexes = [];
+        }
+        let availableIndexes = questionsDatabase.map((_, i) => i).filter(i => !usedQuestionIndexes.includes(i));
+        let randIndex = availableIndexes[Math.floor(Math.random() * availableIndexes.length)];
+        usedQuestionIndexes.push(randIndex);
+        return questionsDatabase[randIndex];
+    }
 
     function showScreen(id) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -194,6 +233,8 @@
                 type: 'SYNC_STATE', 
                 phase: currentPhase, 
                 players: players, 
+                question: currentQuestion,
+                realAnswer: currentRealAnswer,
                 options: currentOptions, 
                 results: lastResults 
             });
@@ -206,6 +247,9 @@
         }
         else if (data.type === 'VOTE') {
             votesSubmitted[conn.peer] = data.optionIndex;
+            if (isHost && currentPhase === 'VOTE') {
+                updateHostVoteUI();
+            }
             checkAllVotesSubmitted();
         }
     }
@@ -233,6 +277,8 @@
         else if (data.type === 'SYNC_STATE') {
             players = data.players;
             currentPhase = data.phase;
+            currentQuestion = data.question;
+            currentRealAnswer = data.realAnswer;
 
             if (currentPhase === 'LOBBY') {
                 showScreen('screen-lobby');
@@ -248,6 +294,8 @@
         }
         else if (data.type === 'START_INPUT') {
             currentPhase = 'INPUT';
+            currentQuestion = data.question;
+            currentRealAnswer = data.realAnswer;
             showInputScreen();
         }
         else if (data.type === 'START_VOTE') {
@@ -263,7 +311,16 @@
 
     function startQuestionPhase() {
         currentPhase = 'INPUT';
-        broadcastState({ type: 'START_INPUT' });
+        const qObj = getRandomQuestion();
+        currentQuestion = qObj.q;
+        currentRealAnswer = qObj.a;
+
+        broadcastState({ 
+            type: 'START_INPUT', 
+            question: currentQuestion, 
+            realAnswer: currentRealAnswer 
+        });
+        
         showInputScreen();
     }
 
@@ -273,16 +330,17 @@
         document.getElementById('submit-answers-btn').style.display = 'block';
         document.getElementById('input-wait-msg').style.display = 'none';
 
+        document.getElementById('question-text').innerText = "❓ " + currentQuestion;
         document.getElementById('host-fake').value = "";
-        document.getElementById('host-real').value = "";
         document.getElementById('player-fake').value = "";
 
         if (isHost) {
-            document.getElementById('role-indicator').innerText = "Ви — ВЕДУЧИЙ. Введіть 2 варіанти.";
+            document.getElementById('role-indicator').innerText = "Ви — ВЕДУЧИЙ. Введіть фейковий варіант (пастку).";
+            document.getElementById('host-real-answer').innerText = currentRealAnswer;
             document.getElementById('host-inputs').style.display = 'block';
             document.getElementById('player-inputs').style.display = 'none';
         } else {
-            document.getElementById('role-indicator').innerText = "Ви — ГРАВЕЦЬ. Вигадайте 1 варіант.";
+            document.getElementById('role-indicator').innerText = "Ви — ГРАВЕЦЬ. Вигадайте фейкову відповідь.";
             document.getElementById('host-inputs').style.display = 'none';
             document.getElementById('player-inputs').style.display = 'block';
         }
@@ -292,9 +350,8 @@
         let dataToSend = {};
         if (isHost) {
             const fake = document.getElementById('host-fake').value.trim();
-            const real = document.getElementById('host-real').value.trim();
-            if (!fake || !real) return alert("Заповніть обидва поля!");
-            dataToSend = { fake, real };
+            if (!fake) return alert("Введіть ваш фейковий варіант!");
+            dataToSend = { fake };
             answersSubmitted[myId] = dataToSend;
         } else {
             const fake = document.getElementById('player-fake').value.trim();
@@ -312,15 +369,23 @@
     function checkAllAnswersSubmitted() {
         if (Object.keys(answersSubmitted).length === players.length) {
             currentOptions = [];
+
+            currentOptions.push({ 
+                text: currentRealAnswer, 
+                isCorrect: true, 
+                authorId: 'SYSTEM', 
+                authorName: 'Правильна відповідь' 
+            });
+
             players.forEach(p => {
                 const ans = answersSubmitted[p.id];
-                if (ans) {
-                    if (ans.real) {
-                        currentOptions.push({ text: ans.real, isCorrect: true, authorId: p.id, authorName: p.name });
-                        currentOptions.push({ text: ans.fake, isCorrect: false, authorId: p.id, authorName: p.name });
-                    } else {
-                        currentOptions.push({ text: ans.fake, isCorrect: false, authorId: p.id, authorName: p.name });
-                    }
+                if (ans && ans.fake) {
+                    currentOptions.push({ 
+                        text: ans.fake, 
+                        isCorrect: false, 
+                        authorId: p.id, 
+                        authorName: p.name 
+                    });
                 }
             });
 
@@ -336,13 +401,16 @@
         showScreen('screen-vote');
         votesSubmitted = {};
         document.getElementById('vote-wait-msg').style.display = 'none';
+        document.getElementById('vote-question-text').innerText = "❓ " + currentQuestion;
 
         const container = document.getElementById('options-container');
         container.innerHTML = "";
 
         if (isHost) {
-            container.innerHTML = "<p style='text-align:center;'>Ведучий не голосує. Чекаємо вибору всіх гравців...</p>";
+            document.getElementById('vote-title').innerText = "📊 Моніторинг голосування (Ведучий)";
+            updateHostVoteUI();
         } else {
+            document.getElementById('vote-title').innerText = "Оберіть правильний варіант:";
             currentOptions.forEach((opt, idx) => {
                 const btn = document.createElement('button');
                 btn.className = 'option-btn';
@@ -362,135 +430,29 @@
         }
     }
 
-    function submitVote(idx) {
-        document.getElementById('options-container').innerHTML = "";
-        document.getElementById('vote-wait-msg').style.display = 'block';
-
-        if (!isHost) {
-            hostConn.send({ type: 'VOTE', optionIndex: idx });
-        }
-    }
-
-    function checkAllVotesSubmitted() {
-        if (Object.keys(votesSubmitted).length === players.length - 1) {
-            const hostId = players[0].id; // Ведучий — завжди перший
-
-            const roundDeltas = {};
-            players.forEach(p => roundDeltas[p.id] = 0);
-
-            let hostTrapsThisRound = 0;
-
-            Object.entries(votesSubmitted).forEach(([voterId, optIdx]) => {
-                const chosenOpt = currentOptions[optIdx];
-
-                if (chosenOpt.isCorrect) {
-                    roundDeltas[voterId] = (roundDeltas[voterId] || 0) + 2;
-                } else {
-                    if (chosenOpt.authorId !== hostId) {
-                        roundDeltas[chosenOpt.authorId] = (roundDeltas[chosenOpt.authorId] || 0) + 1;
-                    } else {
-                        // Повiвся на пастку ведучого
-                        hostTrapsThisRound++;
-                    }
-
-                    if (chosenOpt.authorId === hostId) {
-                        roundDeltas[voterId] = (roundDeltas[voterId] || 0) - 1;
-                    }
-                }
-            });
-
-            // Оновлюємо лічильник пасток ведучого
-            if (players[0]) {
-                players[0].trapsCaught = (players[0].trapsCaught || 0) + hostTrapsThisRound;
-            }
-
-            // Оновлюємо бали гравців
-            players.forEach(p => {
-                p.score = (p.score || 0) + (roundDeltas[p.id] || 0);
-            });
-
-            const results = currentOptions.map((opt, idx) => {
-                const voters = Object.entries(votesSubmitted)
-                    .filter(([pId, vIdx]) => vIdx === idx)
-                    .map(([pId]) => players.find(p => p.id === pId)?.name || "Гравець");
-
-                return { ...opt, voters };
-            });
-
-            lastResults = results;
-            currentPhase = 'RESULTS';
-
-            broadcastState({ type: 'SHOW_RESULTS', results, players });
-            showResultsScreen(results, players);
-        }
-    }
-
-    function showResultsScreen(results, updatedPlayers) {
-        if (updatedPlayers) players = updatedPlayers;
-        showScreen('screen-results');
-
-        const container = document.getElementById('results-container');
+    // Відображення перебігу голосування для Ведучого
+    function updateHostVoteUI() {
+        if (!isHost) return;
+        const container = document.getElementById('options-container');
         container.innerHTML = "";
 
-        results.forEach(res => {
-            const div = document.createElement('div');
-            div.className = `res-item ${res.isCorrect ? 'res-correct' : ''}`;
-            
-            let badge = res.isCorrect 
-                ? `<span class="badge-correct">ПРАВИЛЬНА ВІДПОВІДЬ</span>` 
-                : `<span style="color:#aaa;">Автор: ${res.authorName}</span>`;
+        const hostId = players[0].id;
+        const voterPlayers = players.filter(p => p.id !== hostId);
+        const votedIds = Object.keys(votesSubmitted);
+        const pendingPlayers = voterPlayers.filter(p => !votedIds.includes(p.id));
 
-            let votersText = res.voters.length > 0 
-                ? `<br><small style="color:#f0b90b;">Проголосували: ${res.voters.join(', ')}</small>` 
-                : '';
-
-            div.innerHTML = `<b>${res.text}</b> <br> ${badge} ${votersText}`;
-            container.appendChild(div);
-        });
-
-        // Інформаційний блок пасток Ведучого
-        const hostPlayer = players[0];
-        const hostStatsBox = document.getElementById('host-stats-container');
-        if (hostPlayer) {
-            const hostName = hostPlayer.name.replace(' (Ведучий)', '');
-            const trapsCount = hostPlayer.trapsCaught || 0;
-            hostStatsBox.innerHTML = `<div class="host-stats-card">
-                🎯 <b>Пастки ведучого (${hostName}):</b> впіймано <b>${trapsCount}</b> гравців
-            </div>`;
+        // Статус-бокс запізнілих
+        let statusHtml = `<div class="status-box" style="text-align:left; margin-bottom:15px; border-left: 4px solid #f0b90b;">`;
+        if (pendingPlayers.length > 0) {
+            const pendingNames = pendingPlayers.map(p => `<b style="color:#f0b90b;">${p.name}</b>`).join(', ');
+            statusHtml += `⏳ <b>Чекаємо вибір від:</b> ${pendingNames}`;
+        } else {
+            statusHtml += `✅ <b>Усі гравці проголосували! Обробка...</b>`;
         }
+        statusHtml += `</div>`;
 
-        // Вивід турнірної таблиці (Тільки гравці!)
-        const hostId = players[0]?.id;
-        const onlyPlayers = players.filter(p => p.id !== hostId);
-        const sortedPlayers = [...onlyPlayers].sort((a, b) => b.score - a.score);
-
-        const lbContainer = document.getElementById('leaderboard-container');
-        let tableHtml = `<table class="leaderboard">
-            <thead>
-                <tr><th>#</th><th>Гравець</th><th>Бали</th></tr>
-            </thead>
-            <tbody>`;
-
-        sortedPlayers.forEach((p, idx) => {
-            tableHtml += `<tr>
-                <td>${idx + 1}</td>
-                <td>${p.name}</td>
-                <td><b style="color:#f0b90b;">${p.score}</b></td>
-            </tr>`;
-        });
-
-        tableHtml += `</tbody></table>`;
-        lbContainer.innerHTML = tableHtml;
-
-        if (isHost) {
-            document.getElementById('next-round-btn').style.display = 'block';
-        }
-    }
-
-    function resetForNextRound() {
-        startQuestionPhase();
-    }
-</script>
-</body>
-            </html>
-            
+        // Варіанти та хто за що проголосував
+        let optionsHtml = `<h4 style="margin-bottom:10px; color:#aaa;">Перебіг вибору в реальному часі:</h4>`;
+        currentOptions.forEach((opt, idx) => {
+            const votersForOpt = voterPlayers
+              
