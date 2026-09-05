@@ -3,144 +3,494 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Surebet Calculator</title>
+    <title>Гра у Блеф</title>
+    <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 12px; background: #121212; color: #fff; margin: 0; }
-        .card { max-width: 400px; margin: auto; background: #1e1e1e; padding: 18px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.6); }
-        h2 { text-align: center; margin: 0 0 10px 0; color: #f0b90b; font-size: 21px; font-weight: 700; }
+        * { box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #121212; color: #fff; margin: 0; padding: 15px; }
+        .card { max-width: 450px; margin: auto; background: #1e1e1e; padding: 20px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.6); }
+        h1, h2, h3 { text-align: center; color: #f0b90b; margin-top: 0; }
         label { display: block; margin-top: 10px; font-size: 13px; color: #aaa; }
-        input[type="number"] { width: 100%; padding: 9px 12px; margin-top: 4px; border-radius: 8px; border: 1px solid #333; background: #2b2b2b; color: #fff; font-size: 15px; box-sizing: border-box; outline: none; }
-        input[type="number"]:focus { border-color: #f0b90b; }
+        input[type="text"] { width: 100%; padding: 10px; margin-top: 5px; border-radius: 8px; border: 1px solid #333; background: #2b2b2b; color: #fff; font-size: 15px; outline: none; }
+        input[type="text"]:focus { border-color: #f0b90b; }
+        button { width: 100%; padding: 12px; margin-top: 15px; border-radius: 8px; border: none; background: #f0b90b; color: #000; font-size: 16px; font-weight: bold; cursor: pointer; }
+        button:disabled { background: #555; color: #888; cursor: not-allowed; }
+        .btn-alt { background: #24a1de; color: #fff; }
+        .screen { display: none; }
+        .active { display: block; }
+        ul { list-style: none; padding: 0; }
+        li { background: #2a2a2a; padding: 10px; margin-bottom: 8px; border-radius: 8px; font-size: 14px; }
+        .option-btn { background: #2b2b2b; color: #fff; border: 1px solid #444; padding: 12px; margin-bottom: 8px; border-radius: 8px; text-align: left; width: 100%; font-size: 15px; cursor: pointer; }
+        .option-btn:hover:not(:disabled) { border-color: #f0b90b; }
+        .status-box { background: #252525; padding: 10px; border-radius: 8px; text-align: center; font-size: 14px; color: #ccc; margin-bottom: 12px; }
+        .badge-correct { background: #00ff7f; color: #000; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+        .res-item { background: #2a2a2a; padding: 10px; margin-bottom: 10px; border-radius: 8px; border-left: 4px solid #555; }
+        .res-correct { border-left-color: #00ff7f; }
         
-        .checkbox-container { display: flex; align-items: center; margin-top: 10px; background: #252525; padding: 7px 10px; border-radius: 8px; cursor: pointer; user-select: none; }
-        .checkbox-container input { width: 17px; height: 17px; margin-right: 10px; accent-color: #f0b90b; cursor: pointer; }
-        .checkbox-container span { font-size: 13px; color: #fff; font-weight: 600; }
-        
-        .result { margin-top: 14px; padding: 12px 14px; border-radius: 10px; background: #2a2a2a; }
-        .result p { margin: 6px 0; font-size: 14px; display: flex; justify-content: space-between; align-items: center; }
-        .green { color: #00ff7f; font-weight: bold; }
-        .red { color: #ff4d4d; font-weight: bold; }
+        .leaderboard { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+        .leaderboard th, .leaderboard td { padding: 8px; text-align: left; border-bottom: 1px solid #333; }
+        .leaderboard th { color: #f0b90b; font-weight: bold; }
 
-        /* Примітка про комісії */
-        .fee-note {
-            font-size: 11px;
-            color: #888;
-            text-align: center;
-            margin-top: 8px;
-            font-style: italic;
-        }
-
-        /* Баннер каналу */
-        .channel-banner {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            margin-top: 12px;
-            padding: 8px 12px;
-            background: linear-gradient(135deg, #1e293b, #0f172a);
-            border: 1px solid #24a1de;
-            border-radius: 12px;
-            text-decoration: none;
-            color: #fff;
-        }
-        .channel-avatar { 
-            width: 52px; 
-            height: 52px; 
-            border-radius: 50%; 
-            object-fit: cover; 
-            object-position: center 20%;
-            border: 1.5px solid #24a1de; 
-            flex-shrink: 0;
-            background-color: #24a1de;
-        }
-        .tg-btn { 
-            background-color: #24a1de; 
-            color: #fff; 
-            font-size: 12px; 
-            font-weight: 700; 
-            padding: 8px 16px; 
-            border-radius: 16px; 
-            white-space: nowrap; 
-            flex-shrink: 0;
-            box-shadow: 0 2px 6px rgba(36, 161, 222, 0.4); 
-        }
+        .host-stats-card { background: #2a2210; border: 1px solid #f0b90b; padding: 12px; border-radius: 10px; text-align: center; margin-bottom: 15px; font-size: 14px; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2>Калькулятор Вилок</h2>
-    
-    <label>Ставка на «ТАК» ($):</label>
-    <input type="number" id="stake1" value="10" oninput="calculate()">
+    <h1>🎭 Гра в Блеф</h1>
 
-    <label class="checkbox-container">
-        <input type="checkbox" id="isFreebet" onchange="calculate()">
-        <span>Це фрібет (Freebet)</span>
-    </label>
-
-    <label>Ціна «ТАК» (напр. 0.50 або 50):</label>
-    <input type="number" step="any" id="price1" value="0.50" oninput="calculate()">
-
-    <label>Ціна «НІ» (напр. 0.40 або 40):</label>
-    <input type="number" step="any" id="price2" value="0.40" oninput="calculate()">
-
-    <div class="result">
-        <p>Ставка на «НІ»: <b>$<span id="stake2">0</span></b></p>
-        <p>Власні витрати: <b>$<span id="totalCost">0</span></b></p>
-        <p>Гарантована виплата: <b>$<span id="payout">0</span></b></p>
-        <p>Чистий прибуток: <b>$<span id="profit" class="green">0</span></b></p>
-        <p>ROI від витрат: <b><span id="roi" class="green">0</span>%</b></p>
+    <!-- ЕКРАН 1: Вхід у гру -->
+    <div id="screen-login" class="screen active">
+        <label>Твоє ім'я:</label>
+        <input type="text" id="username" placeholder="Введіть ім'я">
+        
+        <button onclick="createGame()">Створити гру (Я Ведучий)</button>
+        <hr style="border-color: #333; margin: 20px 0;">
+        
+        <label>Код кімнати (для гравців):</label>
+        <input type="text" id="join-code" placeholder="Наприклад: 1234">
+        <button class="btn-alt" onclick="joinGame()">Приєднатися як гравець</button>
     </div>
 
-    <!-- Текстова примітка про комісії -->
-    <div class="fee-note">* Розрахунок без урахування комісій платформи</div>
+    <!-- ЕКРАН 2: Лобі -->
+    <div id="screen-lobby" class="screen">
+        <div class="status-box">Код кімнати: <b id="room-id-display" style="color:#f0b90b; font-size: 18px;">-</b></div>
+        <h3>Учасники (<span id="player-count">1</span>):</h3>
+        <ul id="player-list"></ul>
+        <button id="start-btn" onclick="startQuestionPhase()" disabled>Розпочати раунд</button>
+        <p id="lobby-wait-msg" style="text-align: center; font-size: 12px; color: #888;">Потрібно мінімум 3 учасники (1 ведучий + 2 гравці)</p>
+    </div>
 
-    <!-- Баннер каналу -->
-    <a href="https://t.me/airdrop_crypto_ukraine" target="_blank" class="channel-banner">
-        <img src="logo.png.jpg" alt="Logo" class="channel-avatar">
-        <div class="tg-btn">by @airdrop_crypto</div>
-    </a>
+    <!-- ЕКРАН 3: Ввід відповідей -->
+    <div id="screen-input" class="screen">
+        <div class="status-box" id="role-indicator">---</div>
+        
+        <div id="host-inputs" style="display: none;">
+            <label>1. Ваша фейкова відповідь (щоб заплутати):</label>
+            <input type="text" id="host-fake" placeholder="Вигаданий варіант">
+            
+            <label>2. ПРАВИЛЬНА відповідь:</label>
+            <input type="text" id="host-real" placeholder="Справжня відповідь">
+        </div>
+
+        <div id="player-inputs" style="display: none;">
+            <label>Ваша фейкова відповідь:</label>
+            <input type="text" id="player-fake" placeholder="Вигадайте переконливий варіант">
+        </div>
+
+        <button id="submit-answers-btn" onclick="submitAnswers()">Надіслати відповідь</button>
+        <div id="input-wait-msg" class="status-box" style="display:none; margin-top: 15px;">Відповідь прийнято! Чекаємо інших...</div>
+    </div>
+
+    <!-- ЕКРАН 4: Голосування -->
+    <div id="screen-vote" class="screen">
+        <h3>Оберіть правильний варіант:</h3>
+        <div id="options-container"></div>
+        <div id="vote-wait-msg" class="status-box" style="display:none;">Голос прийнято! Чекаємо підсумків...</div>
+    </div>
+
+    <!-- ЕКРАН 5: Результати -->
+    <div id="screen-results" class="screen">
+        <h2>Підсумки раунду</h2>
+        <div id="results-container"></div>
+        
+        <h3 style="margin-top: 25px;">🏆 Турнірна таблиця</h3>
+        <div id="host-stats-container"></div>
+        <div id="leaderboard-container"></div>
+
+        <button id="next-round-btn" onclick="resetForNextRound()" style="display: none;">Наступний раунд</button>
+    </div>
 </div>
 
 <script>
-function calculate() {
-    let s1 = parseFloat(document.getElementById('stake1').value) || 0;
-    let p1 = parseFloat(document.getElementById('price1').value) || 0;
-    let p2 = parseFloat(document.getElementById('price2').value) || 0;
-    let isFreebet = document.getElementById('isFreebet').checked;
+    let peer = null;
+    let connMap = {}; 
+    let hostConn = null; 
+    let isHost = false;
+    let myName = "";
+    let myId = "";
+    let players = []; // { id, name, score, trapsCaught }
+    let currentPhase = 'LOBBY';
 
-    if (p1 > 1) p1 /= 100;
-    if (p2 > 1) p2 /= 100;
+    let answersSubmitted = {}; 
+    let votesSubmitted = {};   
+    let currentOptions = [];
+    let lastResults = [];
 
-    if (s1 > 0 && p1 > 0 && p2 > 0) {
-        let grossPayout1 = s1 / p1;
-        let netPayout1 = isFreebet ? (grossPayout1 - s1) : grossPayout1;
-        
-        let s2 = netPayout1 * p2;
-        let cash1 = isFreebet ? 0 : s1;
-        let totalCost = cash1 + s2;
-        
-        let payout = netPayout1;
-        let profit = payout - totalCost;
-        let roi = totalCost > 0 ? (profit / totalCost) * 100 : 0;
-
-        document.getElementById('stake2').innerText = s2.toFixed(2);
-        document.getElementById('totalCost').innerText = totalCost.toFixed(2);
-        document.getElementById('payout').innerText = payout.toFixed(2);
-        
-        let profitElem = document.getElementById('profit');
-        profitElem.innerText = profit.toFixed(2);
-        profitElem.className = profit >= 0 ? 'green' : 'red';
-
-        let roiElem = document.getElementById('roi');
-        roiElem.innerText = roi.toFixed(2);
-        roiElem.className = roi >= 0 ? 'green' : 'red';
+    function showScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
     }
-}
-calculate();
-</script>
 
+    function createGame() {
+        myName = document.getElementById('username').value.trim();
+        if (!myName) return alert("Введіть ім'я!");
+        
+        isHost = true;
+        const code = Math.floor(1000 + Math.random() * 9000).toString();
+        myId = "bluff-game-" + code;
+
+        peer = new Peer(myId, { debug: 1 });
+        peer.on('open', () => {
+            document.getElementById('room-id-display').innerText = code;
+            players.push({ id: myId, name: myName, score: 0, trapsCaught: 0 });
+            updateLobbyUI();
+            showScreen('screen-lobby');
+            document.getElementById('start-btn').style.display = 'block';
+        });
+
+        peer.on('connection', conn => {
+            conn.on('data', data => handleHostMessages(conn, data));
+            conn.on('close', () => {
+                delete connMap[conn.peer];
+                if (currentPhase === 'LOBBY') {
+                    players = players.filter(p => p.id !== conn.peer);
+                    updateLobbyUI();
+                    broadcastState({ type: 'LOBBY_UPDATE', players });
+                }
+            });
+        });
+
+        peer.on('error', err => console.error("Peer error:", err));
+    }
+
+    function joinGame() {
+        myName = document.getElementById('username').value.trim();
+        const code = document.getElementById('join-code').value.trim();
+        if (!myName || !code) return alert("Введіть ім'я та код кімнати!");
+
+        isHost = false;
+        peer = new Peer(null, { debug: 1 });
+        peer.on('open', id => {
+            myId = id;
+            hostConn = peer.connect("bluff-game-" + code);
+            hostConn.on('open', () => {
+                hostConn.send({ type: 'JOIN', name: myName });
+                document.getElementById('room-id-display').innerText = code;
+            });
+            hostConn.on('data', handlePlayerMessages);
+        });
+
+        peer.on('error', err => {
+            alert("Помилка підключення! Перевірте код кімнати.");
+            console.error("Peer error:", err);
+        });
+    }
+
+    function handleHostMessages(conn, data) {
+        if (data.type === 'JOIN') {
+            connMap[conn.peer] = conn;
+
+            let existingPlayer = players.find(p => p.name === data.name);
+            if (existingPlayer) {
+                existingPlayer.id = conn.peer;
+            } else {
+                players.push({ id: conn.peer, name: data.name, score: 0, trapsCaught: 0 });
+            }
+
+            updateLobbyUI();
+
+            conn.send({ 
+                type: 'SYNC_STATE', 
+                phase: currentPhase, 
+                players: players, 
+                options: currentOptions, 
+                results: lastResults 
+            });
+
+            broadcastState({ type: 'LOBBY_UPDATE', players });
+        }
+        else if (data.type === 'SUBMIT_ANSWER') {
+            answersSubmitted[conn.peer] = data.answers;
+            checkAllAnswersSubmitted();
+        }
+        else if (data.type === 'VOTE') {
+            votesSubmitted[conn.peer] = data.optionIndex;
+            checkAllVotesSubmitted();
+        }
+    }
+
+    function updateLobbyUI() {
+        document.getElementById('player-count').innerText = players.length;
+        const list = document.getElementById('player-list');
+        list.innerHTML = players.map((p, idx) => `<li>${p.name}${idx === 0 ? ' (Ведучий)' : ''}</li>`).join('');
+        if (isHost) {
+            document.getElementById('start-btn').disabled = players.length < 3; 
+        }
+    }
+
+    function broadcastState(msg) {
+        Object.values(connMap).forEach(c => {
+            try { c.send(msg); } catch(e){}
+        });
+    }
+
+    function handlePlayerMessages(data) {
+        if (data.type === 'LOBBY_UPDATE') {
+            players = data.players;
+            updateLobbyUI();
+        }
+        else if (data.type === 'SYNC_STATE') {
+            players = data.players;
+            currentPhase = data.phase;
+
+            if (currentPhase === 'LOBBY') {
+                showScreen('screen-lobby');
+                document.getElementById('start-btn').style.display = 'none';
+            } else if (currentPhase === 'INPUT') {
+                showInputScreen();
+            } else if (currentPhase === 'VOTE') {
+                currentOptions = data.options;
+                showVoteScreen();
+            } else if (currentPhase === 'RESULTS') {
+                showResultsScreen(data.results, data.players);
+            }
+        }
+        else if (data.type === 'START_INPUT') {
+            currentPhase = 'INPUT';
+            showInputScreen();
+        }
+        else if (data.type === 'START_VOTE') {
+            currentPhase = 'VOTE';
+            currentOptions = data.options;
+            showVoteScreen();
+        }
+        else if (data.type === 'SHOW_RESULTS') {
+            currentPhase = 'RESULTS';
+            showResultsScreen(data.results, data.players);
+        }
+    }
+
+    function startQuestionPhase() {
+        currentPhase = 'INPUT';
+        broadcastState({ type: 'START_INPUT' });
+        showInputScreen();
+    }
+
+    function showInputScreen() {
+        showScreen('screen-input');
+        answersSubmitted = {};
+        document.getElementById('submit-answers-btn').style.display = 'block';
+        document.getElementById('input-wait-msg').style.display = 'none';
+
+        document.getElementById('host-fake').value = "";
+        document.getElementById('host-real').value = "";
+        document.getElementById('player-fake').value = "";
+
+        if (isHost) {
+            document.getElementById('role-indicator').innerText = "Ви — ВЕДУЧИЙ. Введіть 2 варіанти.";
+            document.getElementById('host-inputs').style.display = 'block';
+            document.getElementById('player-inputs').style.display = 'none';
+        } else {
+            document.getElementById('role-indicator').innerText = "Ви — ГРАВЕЦЬ. Вигадайте 1 варіант.";
+            document.getElementById('host-inputs').style.display = 'none';
+            document.getElementById('player-inputs').style.display = 'block';
+        }
+    }
+
+    function submitAnswers() {
+        let dataToSend = {};
+        if (isHost) {
+            const fake = document.getElementById('host-fake').value.trim();
+            const real = document.getElementById('host-real').value.trim();
+            if (!fake || !real) return alert("Заповніть обидва поля!");
+            dataToSend = { fake, real };
+            answersSubmitted[myId] = dataToSend;
+        } else {
+            const fake = document.getElementById('player-fake').value.trim();
+            if (!fake) return alert("Введіть варіант!");
+            dataToSend = { fake };
+            hostConn.send({ type: 'SUBMIT_ANSWER', answers: dataToSend });
+        }
+
+        document.getElementById('submit-answers-btn').style.display = 'none';
+        document.getElementById('input-wait-msg').style.display = 'block';
+
+        if (isHost) checkAllAnswersSubmitted();
+    }
+
+    function checkAllAnswersSubmitted() {
+        if (Object.keys(answersSubmitted).length === players.length) {
+            currentOptions = [];
+            players.forEach(p => {
+                const ans = answersSubmitted[p.id];
+                if (ans) {
+                    if (ans.real) {
+                        currentOptions.push({ text: ans.real, isCorrect: true, authorId: p.id, authorName: p.name });
+                        currentOptions.push({ text: ans.fake, isCorrect: false, authorId: p.id, authorName: p.name });
+                    } else {
+                        currentOptions.push({ text: ans.fake, isCorrect: false, authorId: p.id, authorName: p.name });
+                    }
+                }
+            });
+
+            currentOptions.sort(() => Math.random() - 0.5);
+
+            currentPhase = 'VOTE';
+            broadcastState({ type: 'START_VOTE', options: currentOptions });
+            showVoteScreen();
+        }
+    }
+
+    function showVoteScreen() {
+        showScreen('screen-vote');
+        votesSubmitted = {};
+        document.getElementById('vote-wait-msg').style.display = 'none';
+
+        const container = document.getElementById('options-container');
+        container.innerHTML = "";
+
+        if (isHost) {
+            container.innerHTML = "<p style='text-align:center;'>Ведучий не голосує. Чекаємо вибору всіх гравців...</p>";
+        } else {
+            currentOptions.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = opt.text;
+
+                if (opt.authorId === myId) {
+                    btn.disabled = true;
+                    btn.innerText += " 🚫 (Ваш варіант)";
+                    btn.style.opacity = "0.5";
+                    btn.style.cursor = "not-allowed";
+                } else {
+                    btn.onclick = () => submitVote(idx);
+                }
+
+                container.appendChild(btn);
+            });
+        }
+    }
+
+    function submitVote(idx) {
+        document.getElementById('options-container').innerHTML = "";
+        document.getElementById('vote-wait-msg').style.display = 'block';
+
+        if (!isHost) {
+            hostConn.send({ type: 'VOTE', optionIndex: idx });
+        }
+    }
+
+    function checkAllVotesSubmitted() {
+        if (Object.keys(votesSubmitted).length === players.length - 1) {
+            const hostId = players[0].id; // Ведучий — завжди перший
+
+            const roundDeltas = {};
+            players.forEach(p => roundDeltas[p.id] = 0);
+
+            let hostTrapsThisRound = 0;
+
+            Object.entries(votesSubmitted).forEach(([voterId, optIdx]) => {
+                const chosenOpt = currentOptions[optIdx];
+
+                if (chosenOpt.isCorrect) {
+                    roundDeltas[voterId] = (roundDeltas[voterId] || 0) + 2;
+                } else {
+                    if (chosenOpt.authorId !== hostId) {
+                        roundDeltas[chosenOpt.authorId] = (roundDeltas[chosenOpt.authorId] || 0) + 1;
+                    } else {
+                        // Повiвся на пастку ведучого
+                        hostTrapsThisRound++;
+                    }
+
+                    if (chosenOpt.authorId === hostId) {
+                        roundDeltas[voterId] = (roundDeltas[voterId] || 0) - 1;
+                    }
+                }
+            });
+
+            // Оновлюємо лічильник пасток ведучого
+            if (players[0]) {
+                players[0].trapsCaught = (players[0].trapsCaught || 0) + hostTrapsThisRound;
+            }
+
+            // Оновлюємо бали гравців
+            players.forEach(p => {
+                p.score = (p.score || 0) + (roundDeltas[p.id] || 0);
+            });
+
+            const results = currentOptions.map((opt, idx) => {
+                const voters = Object.entries(votesSubmitted)
+                    .filter(([pId, vIdx]) => vIdx === idx)
+                    .map(([pId]) => players.find(p => p.id === pId)?.name || "Гравець");
+
+                return { ...opt, voters };
+            });
+
+            lastResults = results;
+            currentPhase = 'RESULTS';
+
+            broadcastState({ type: 'SHOW_RESULTS', results, players });
+            showResultsScreen(results, players);
+        }
+    }
+
+    function showResultsScreen(results, updatedPlayers) {
+        if (updatedPlayers) players = updatedPlayers;
+        showScreen('screen-results');
+
+        const container = document.getElementById('results-container');
+        container.innerHTML = "";
+
+        results.forEach(res => {
+            const div = document.createElement('div');
+            div.className = `res-item ${res.isCorrect ? 'res-correct' : ''}`;
+            
+            let badge = res.isCorrect 
+                ? `<span class="badge-correct">ПРАВИЛЬНА ВІДПОВІДЬ</span>` 
+                : `<span style="color:#aaa;">Автор: ${res.authorName}</span>`;
+
+            let votersText = res.voters.length > 0 
+                ? `<br><small style="color:#f0b90b;">Проголосували: ${res.voters.join(', ')}</small>` 
+                : '';
+
+            div.innerHTML = `<b>${res.text}</b> <br> ${badge} ${votersText}`;
+            container.appendChild(div);
+        });
+
+        // Інформаційний блок пасток Ведучого
+        const hostPlayer = players[0];
+        const hostStatsBox = document.getElementById('host-stats-container');
+        if (hostPlayer) {
+            const hostName = hostPlayer.name.replace(' (Ведучий)', '');
+            const trapsCount = hostPlayer.trapsCaught || 0;
+            hostStatsBox.innerHTML = `<div class="host-stats-card">
+                🎯 <b>Пастки ведучого (${hostName}):</b> впіймано <b>${trapsCount}</b> гравців
+            </div>`;
+        }
+
+        // Вивід турнірної таблиці (Тільки гравці!)
+        const hostId = players[0]?.id;
+        const onlyPlayers = players.filter(p => p.id !== hostId);
+        const sortedPlayers = [...onlyPlayers].sort((a, b) => b.score - a.score);
+
+        const lbContainer = document.getElementById('leaderboard-container');
+        let tableHtml = `<table class="leaderboard">
+            <thead>
+                <tr><th>#</th><th>Гравець</th><th>Бали</th></tr>
+            </thead>
+            <tbody>`;
+
+        sortedPlayers.forEach((p, idx) => {
+            tableHtml += `<tr>
+                <td>${idx + 1}</td>
+                <td>${p.name}</td>
+                <td><b style="color:#f0b90b;">${p.score}</b></td>
+            </tr>`;
+        });
+
+        tableHtml += `</tbody></table>`;
+        lbContainer.innerHTML = tableHtml;
+
+        if (isHost) {
+            document.getElementById('next-round-btn').style.display = 'block';
+        }
+    }
+
+    function resetForNextRound() {
+        startQuestionPhase();
+    }
+</script>
 </body>
-</html>
+            </html>
+            
