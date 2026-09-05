@@ -47,12 +47,12 @@
         <label>Твоє ім'я:</label>
         <input type="text" id="username" placeholder="Введіть ім'я">
         
-        <button onclick="createGame()">Створити гру (Я Ведучий)</button>
+        <button id="create-btn" onclick="createGame()">Створити гру (Я Ведучий)</button>
         <hr style="border-color: #333; margin: 20px 0;">
         
         <label>Код кімнати (для гравців):</label>
         <input type="text" id="join-code" placeholder="Наприклад: 1234">
-        <button class="btn-alt" onclick="joinGame()">Приєднатися як гравець</button>
+        <button id="join-btn" class="btn-alt" onclick="joinGame()">Приєднатися як гравець</button>
     </div>
 
     <!-- ЕКРАН 2: Лобі -->
@@ -109,7 +109,6 @@
 </div>
 
 <script>
-    // База перевірених фактів
     const questionsDatabase = [
         { q: "Який птах є єдиним у світі, здатним літати задом наперед?", a: "Колібрі" },
         { q: "Яка пустеля вважається найсухішою на Землі?", a: "Атакама" },
@@ -128,6 +127,16 @@
         { q: "Які формені елементи крові відповідають за її зсідання?", a: "Тромбоцити" }
     ];
 
+    const peerConfig = {
+        debug: 1,
+        config: {
+            'iceServers': [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' }
+            ]
+        }
+    };
+
     let usedQuestionIndexes = [];
     let currentQuestion = "";
     let currentRealAnswer = "";
@@ -138,7 +147,7 @@
     let isHost = false;
     let myName = "";
     let myId = "";
-    let players = []; // { id, name, score, trapsCaught }
+    let players = []; 
     let currentPhase = 'LOBBY';
 
     let answersSubmitted = {}; 
@@ -164,18 +173,33 @@
     function createGame() {
         myName = document.getElementById('username').value.trim();
         if (!myName) return alert("Введіть ім'я!");
-        
+
+        document.getElementById('create-btn').innerText = "Створення кімнати...";
+        document.getElementById('create-btn').disabled = true;
+
         isHost = true;
+        tryCreatePeerHost();
+    }
+
+    function tryCreatePeerHost() {
         const code = Math.floor(1000 + Math.random() * 9000).toString();
         myId = "bluff-game-" + code;
 
-        peer = new Peer(myId, { debug: 1 });
+        if (peer) {
+            try { peer.destroy(); } catch(e){}
+        }
+
+        peer = new Peer(myId, peerConfig);
+
         peer.on('open', () => {
             document.getElementById('room-id-display').innerText = code;
-            players.push({ id: myId, name: myName, score: 0, trapsCaught: 0 });
+            players = [{ id: myId, name: myName, score: 0, trapsCaught: 0 }];
             updateLobbyUI();
             showScreen('screen-lobby');
             document.getElementById('start-btn').style.display = 'block';
+            
+            document.getElementById('create-btn').innerText = "Створити гру (Я Ведучий)";
+            document.getElementById('create-btn').disabled = false;
         });
 
         peer.on('connection', conn => {
@@ -190,7 +214,17 @@
             });
         });
 
-        peer.on('error', err => console.error("Peer error:", err));
+        peer.on('error', err => {
+            console.error("Peer error:", err);
+            // Якщо код вже виявився зайнятим на сервері PeerJS — пробуємо згенерувати новий
+            if (err.type === 'unavailable-id') {
+                tryCreatePeerHost();
+            } else {
+                alert("Помилка підключення до мережі: " + (err.type || err) + "\nСпробуйте ще раз.");
+                document.getElementById('create-btn').innerText = "Створити гру (Я Ведучий)";
+                document.getElementById('create-btn').disabled = false;
+            }
+        });
     }
 
     function joinGame() {
@@ -198,21 +232,40 @@
         const code = document.getElementById('join-code').value.trim();
         if (!myName || !code) return alert("Введіть ім'я та код кімнати!");
 
+        document.getElementById('join-btn').innerText = "Підключення...";
+        document.getElementById('join-btn').disabled = true;
+
         isHost = false;
-        peer = new Peer(null, { debug: 1 });
+        if (peer) {
+            try { peer.destroy(); } catch(e){}
+        }
+
+        peer = new Peer(null, peerConfig);
+
         peer.on('open', id => {
             myId = id;
             hostConn = peer.connect("bluff-game-" + code);
+            
             hostConn.on('open', () => {
                 hostConn.send({ type: 'JOIN', name: myName });
                 document.getElementById('room-id-display').innerText = code;
+                document.getElementById('join-btn').innerText = "Приєднатися як гравець";
+                document.getElementById('join-btn').disabled = false;
             });
+
             hostConn.on('data', handlePlayerMessages);
+            
+            hostConn.on('error', err => {
+                alert("Не вдалося підключитися до ведучого. Перевірте код кімнати.");
+                document.getElementById('join-btn').innerText = "Приєднатися як гравець";
+                document.getElementById('join-btn').disabled = false;
+            });
         });
 
         peer.on('error', err => {
-            alert("Помилка підключення! Перевірте код кімнати.");
-            console.error("Peer error:", err);
+            alert("Помилка підключення: " + (err.type || err));
+            document.getElementById('join-btn').innerText = "Приєднатися як гравець";
+            document.getElementById('join-btn').disabled = false;
         });
     }
 
@@ -410,49 +463,4 @@
             document.getElementById('vote-title').innerText = "📊 Моніторинг голосування (Ведучий)";
             updateHostVoteUI();
         } else {
-            document.getElementById('vote-title').innerText = "Оберіть правильний варіант:";
-            currentOptions.forEach((opt, idx) => {
-                const btn = document.createElement('button');
-                btn.className = 'option-btn';
-                btn.innerText = opt.text;
-
-                if (opt.authorId === myId) {
-                    btn.disabled = true;
-                    btn.innerText += " 🚫 (Ваш варіант)";
-                    btn.style.opacity = "0.5";
-                    btn.style.cursor = "not-allowed";
-                } else {
-                    btn.onclick = () => submitVote(idx);
-                }
-
-                container.appendChild(btn);
-            });
-        }
-    }
-
-    // Відображення перебігу голосування для Ведучого
-    function updateHostVoteUI() {
-        if (!isHost) return;
-        const container = document.getElementById('options-container');
-        container.innerHTML = "";
-
-        const hostId = players[0].id;
-        const voterPlayers = players.filter(p => p.id !== hostId);
-        const votedIds = Object.keys(votesSubmitted);
-        const pendingPlayers = voterPlayers.filter(p => !votedIds.includes(p.id));
-
-        // Статус-бокс запізнілих
-        let statusHtml = `<div class="status-box" style="text-align:left; margin-bottom:15px; border-left: 4px solid #f0b90b;">`;
-        if (pendingPlayers.length > 0) {
-            const pendingNames = pendingPlayers.map(p => `<b style="color:#f0b90b;">${p.name}</b>`).join(', ');
-            statusHtml += `⏳ <b>Чекаємо вибір від:</b> ${pendingNames}`;
-        } else {
-            statusHtml += `✅ <b>Усі гравці проголосували! Обробка...</b>`;
-        }
-        statusHtml += `</div>`;
-
-        // Варіанти та хто за що проголосував
-        let optionsHtml = `<h4 style="margin-bottom:10px; color:#aaa;">Перебіг вибору в реальному часі:</h4>`;
-        currentOptions.forEach((opt, idx) => {
-            const votersForOpt = voterPlayers
-              
+    
