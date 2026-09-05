@@ -33,9 +33,10 @@
         .channel-banner {
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: center; /* Центруємо логотип і кнопку разом */
+            gap: 16px; /* Акуратна відстань між ними без розриву */
             margin-top: 22px;
-            padding: 10px 14px;
+            padding: 12px 16px;
             background: linear-gradient(135deg, #1e293b, #0f172a);
             border: 1px solid #24a1de;
             border-radius: 12px;
@@ -43,20 +44,20 @@
             color: #fff;
         }
         .channel-avatar { 
-            width: 46px; 
-            height: 46px; 
+            width: 54px; /* Збільшений розмір логотипу */
+            height: 54px; 
             border-radius: 50%; 
             object-fit: cover; 
-            border: 1px solid #24a1de; 
+            border: 2px solid #24a1de; 
             flex-shrink: 0;
             background-color: #24a1de;
         }
         .tg-btn { 
             background-color: #24a1de; 
             color: #fff; 
-            font-size: 12px; 
+            font-size: 13px; 
             font-weight: 700; 
-            padding: 10px 16px; 
+            padding: 10px 18px; 
             border-radius: 20px; 
             white-space: nowrap; 
             flex-shrink: 0;
