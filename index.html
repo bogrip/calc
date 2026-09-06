@@ -10,65 +10,50 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
 
-        html, body {
-            height: 100%;
-            margin: 0;
-            padding: 0;
+        body {
             background-color: #121212;
             color: #ffffff;
-        }
-
-        body {
+            margin: 0;
+            padding: 10px 15px;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 12px 16px;
+            min-height: 100vh;
         }
 
         .container {
             width: 100%;
-            max-width: 480px;
-            min-height: calc(100vh - 24px);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        .main-content {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
+            max-width: 420px;
         }
 
         h1.title {
             text-align: center;
             color: #f0b90b;
-            font-size: 24px;
+            font-size: 21px;
             font-weight: 700;
-            margin: 6px 0 10px 0;
+            margin-top: 0;
+            margin-bottom: 10px;
         }
 
         .form-group {
-            display: flex;
-            flex-direction: column;
+            margin-bottom: 10px;
         }
 
         label {
             display: block;
             color: #b7b7b7;
-            font-size: 14px;
-            margin-bottom: 6px;
+            font-size: 13px;
+            margin-bottom: 4px;
         }
 
         input[type="number"] {
             width: 100%;
-            padding: 14px 16px;
+            padding: 11px 14px;
             background-color: #242424;
             border: 1px solid #333333;
             border-radius: 12px;
             color: #ffffff;
-            font-size: 18px;
-            font-weight: 600;
+            font-size: 16px;
             outline: none;
             transition: border-color 0.2s;
         }
@@ -81,16 +66,17 @@
             background-color: #242424;
             border: 1px solid #333333;
             border-radius: 12px;
-            padding: 14px 16px;
+            padding: 11px 14px;
             display: flex;
             align-items: center;
             gap: 12px;
+            margin-bottom: 10px;
             cursor: pointer;
         }
 
         .checkbox-card input[type="checkbox"] {
-            width: 22px;
-            height: 22px;
+            width: 20px;
+            height: 20px;
             accent-color: #f0b90b;
             cursor: pointer;
         }
@@ -99,23 +85,23 @@
             margin-bottom: 0;
             color: #ffffff;
             font-weight: 600;
-            font-size: 16px;
+            font-size: 14px;
             cursor: pointer;
         }
 
         .results-box {
             background-color: #222222;
             border-radius: 16px;
-            padding: 16px 20px;
-            margin-top: 4px;
+            padding: 12px 18px;
+            margin-top: 10px;
         }
 
         .result-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
-            font-size: 16px;
+            margin-bottom: 8px;
+            font-size: 14px;
         }
 
         .result-row:last-child {
@@ -128,7 +114,7 @@
 
         .result-row .val {
             font-weight: 700;
-            font-size: 18px;
+            font-size: 15px;
             color: #ffffff;
         }
 
@@ -138,8 +124,8 @@
         .disclaimer {
             text-align: center;
             color: #777777;
-            font-size: 12px;
-            margin-top: 6px;
+            font-size: 11px;
+            margin-top: 8px;
             font-style: italic;
         }
 
@@ -151,20 +137,20 @@
             background-color: #0d1926;
             border: 1px solid #1c3b5e;
             border-radius: 20px;
-            padding: 10px 18px;
-            margin-top: 10px;
+            padding: 8px 16px;
+            margin-top: 12px;
             box-shadow: 0 0 15px rgba(36, 161, 222, 0.12);
         }
 
         .avatar-wrapper {
             display: flex;
             align-items: center;
-            margin-left: 6px;
+            margin-left: 8px;
         }
 
         .avatar-img {
-            width: 60px;
-            height: 60px;
+            width: 58px;
+            height: 58px;
             border-radius: 50%;
             object-fit: cover;
             border: 2px solid #24a1de;
@@ -176,64 +162,62 @@
             background-color: #24a1de;
             color: #ffffff;
             text-decoration: none;
-            padding: 12px 20px;
+            padding: 10px 18px;
             border-radius: 20px;
             font-weight: 700;
-            font-size: 15px;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="main-content">
-        <h1 class="title">Калькулятор Вилок</h1>
+    <h1 class="title">Калькулятор Вилок</h1>
 
-        <div class="form-group">
-            <label>Ставка на Команду 1 ($):</label>
-            <input type="number" id="stake1" value="10" step="any" oninput="calculate()">
-        </div>
-
-        <div class="checkbox-card" onclick="toggleCheckbox(event)">
-            <input type="checkbox" id="isFreebet" onchange="calculate()">
-            <label for="isFreebet">Це фрібет (Freebet)</label>
-        </div>
-
-        <div class="form-group">
-            <label>Ціна Команди 1 (напр. 0.50 або 50):</label>
-            <input type="number" id="price1" value="0.50" step="any" oninput="calculate()">
-        </div>
-
-        <div class="form-group">
-            <label>Ціна Команди 2 (напр. 0.40 або 40):</label>
-            <input type="number" id="price2" value="0.40" step="any" oninput="calculate()">
-        </div>
-
-        <div class="results-box">
-            <div class="result-row">
-                <span class="label-text">Ставка на Команду 2:</span>
-                <span class="val" id="resStake2">$8.00</span>
-            </div>
-            <div class="result-row">
-                <span class="label-text">Власні витрати:</span>
-                <span class="val" id="resSpent">$18.00</span>
-            </div>
-            <div class="result-row">
-                <span class="label-text">Гарантована виплата:</span>
-                <span class="val" id="resPayout">$20.00</span>
-            </div>
-            <div class="result-row">
-                <span class="label-text">Чистий прибуток:</span>
-                <span class="val green" id="resProfit">$2.00</span>
-            </div>
-            <div class="result-row">
-                <span class="label-text">ROI від витрат:</span>
-                <span class="val green" id="resRoi">11.11%</span>
-            </div>
-        </div>
-
-        <div class="disclaimer">* Розрахунок без урахування комісій платформи</div>
+    <div class="form-group">
+        <label>Ставка на Команду 1 ($):</label>
+        <input type="number" id="stake1" value="10" step="any" oninput="calculate()">
     </div>
+
+    <div class="checkbox-card" onclick="toggleCheckbox(event)">
+        <input type="checkbox" id="isFreebet" onchange="calculate()">
+        <label for="isFreebet">Це фрібет (Freebet)</label>
+    </div>
+
+    <div class="form-group">
+        <label>Ціна Команди 1 (напр. 0.50 або 50):</label>
+        <input type="number" id="price1" value="0.50" step="any" oninput="calculate()">
+    </div>
+
+    <div class="form-group">
+        <label>Ціна Команди 2 (напр. 0.40 або 40):</label>
+        <input type="number" id="price2" value="0.40" step="any" oninput="calculate()">
+    </div>
+
+    <div class="results-box">
+        <div class="result-row">
+            <span class="label-text">Ставка на Команду 2:</span>
+            <span class="val" id="resStake2">$8.00</span>
+        </div>
+        <div class="result-row">
+            <span class="label-text">Власні витрати:</span>
+            <span class="val" id="resSpent">$18.00</span>
+        </div>
+        <div class="result-row">
+            <span class="label-text">Гарантована виплата:</span>
+            <span class="val" id="resPayout">$20.00</span>
+        </div>
+        <div class="result-row">
+            <span class="label-text">Чистий прибуток:</span>
+            <span class="val green" id="resProfit">$2.00</span>
+        </div>
+        <div class="result-row">
+            <span class="label-text">ROI від витрат:</span>
+            <span class="val green" id="resRoi">11.11%</span>
+        </div>
+    </div>
+
+    <div class="disclaimer">* Розрахунок без урахування комісій платформи</div>
 
     <!-- Нижній блок автора -->
     <div class="footer-card">
