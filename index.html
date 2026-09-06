@@ -3,259 +3,297 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Калькулятор Вилок та Фрібетів</title>
+    <title>Калькулятор Вилок</title>
     <style>
-        * { box-sizing: border-box; }
+        * {
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: #121212;
-            color: #fff;
+            background-color: #121212;
+            color: #ffffff;
             margin: 0;
-            padding: 15px;
+            padding: 20px 15px;
+            display: flex;
+            justify-content: center;
         }
-        .card {
-            max-width: 500px;
-            margin: auto;
-            background: #1e1e1e;
-            padding: 20px;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
-        }
-        h1 { text-align: center; color: #f0b90b; margin-top: 0; font-size: 22px; }
-        label { display: block; margin-top: 10px; font-size: 13px; color: #aaa; }
-        input, select {
+
+        .container {
             width: 100%;
-            padding: 10px;
-            margin-top: 5px;
-            border-radius: 8px;
-            border: 1px solid #333;
-            background: #2b2b2b;
-            color: #fff;
-            font-size: 15px;
+            max-width: 420px;
+        }
+
+        h1.title {
+            text-align: center;
+            color: #f0b90b;
+            font-size: 22px;
+            font-weight: 700;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            color: #b7b7b7;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 14px 16px;
+            background-color: #242424;
+            border: 1px solid #333333;
+            border-radius: 12px;
+            color: #ffffff;
+            font-size: 16px;
             outline: none;
+            transition: border-color 0.2s;
         }
-        input:focus, select:focus { border-color: #f0b90b; }
-        .row { display: flex; gap: 10px; }
-        .col { flex: 1; }
-        .outcome-box {
-            background: #252525;
-            padding: 12px;
-            border-radius: 10px;
-            margin-top: 12px;
-            border: 1px solid #333;
+
+        input[type="number"]:focus {
+            border-color: #f0b90b;
         }
-        .outcome-box h3 { margin: 0 0 10px 0; font-size: 15px; color: #f0b90b; }
-        .result-box {
-            background: #2a2210;
-            border: 1px solid #f0b90b;
-            padding: 15px;
-            border-radius: 10px;
+
+        .checkbox-card {
+            background-color: #242424;
+            border: 1px solid #333333;
+            border-radius: 12px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+            cursor: pointer;
+        }
+
+        .checkbox-card input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: #f0b90b;
+            cursor: pointer;
+        }
+
+        .checkbox-card label {
+            margin-bottom: 0;
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        .results-box {
+            background-color: #222222;
+            border-radius: 16px;
+            padding: 18px 20px;
             margin-top: 20px;
         }
-        .result-item {
+
+        .result-row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 8px;
+            align-items: center;
+            margin-bottom: 12px;
             font-size: 15px;
         }
-        .result-item:last-child { margin-bottom: 0; }
-        .val { font-weight: bold; }
-        .profit-pos { color: #00ff7f; }
-        .profit-neg { color: #ff4d4d; }
-        .badge {
-            display: inline-block;
-            padding: 6px 8px;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: bold;
-            margin-bottom: 12px;
-            text-align: center;
-            width: 100%;
+
+        .result-row:last-child {
+            margin-bottom: 0;
         }
-        .badge-success { background: rgba(0, 255, 127, 0.15); color: #00ff7f; border: 1px solid #00ff7f; }
-        .badge-danger { background: rgba(255, 77, 77, 0.15); color: #ff4d4d; border: 1px solid #ff4d4d; }
+
+        .result-row .label-text {
+            color: #e1e1e1;
+        }
+
+        .result-row .val {
+            font-weight: 700;
+            font-size: 16px;
+            color: #ffffff;
+        }
+
+        .val.green {
+            color: #22c55e;
+        }
+
+        .val.red {
+            color: #ef4444;
+        }
+
+        .disclaimer {
+            text-align: center;
+            color: #777777;
+            font-size: 12px;
+            margin-top: 14px;
+            font-style: italic;
+        }
+
+        /* Блок автора внизу */
+        .footer-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #0d1926;
+            border: 1px solid #1c3b5e;
+            border-radius: 20px;
+            padding: 10px 18px;
+            margin-top: 25px;
+            box-shadow: 0 0 15px rgba(36, 161, 222, 0.12);
+        }
+
+        .avatar-wrapper {
+            display: flex;
+            align-items: center;
+            margin-left: 10px; /* Трохи зміщено вправо */
+        }
+
+        .avatar-img {
+            width: 58px;  /* Збільшений розмір іконки */
+            height: 58px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #24a1de;
+            background-color: #000;
+        }
+
+        .tg-btn {
+            background-color: #24a1de;
+            color: #ffffff;
+            text-decoration: none;
+            padding: 10px 18px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 14px;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        .tg-btn:active {
+            transform: scale(0.97);
+        }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h1>🧮 Калькулятор Вилок & Фрібетів</h1>
+<div class="container">
+    <h1 class="title">Калькулятор Вилок</h1>
 
-    <div class="row">
-        <div class="col">
-            <label>Режим розрахунку:</label>
-            <select id="calcMode" onchange="calculate()">
-                <option value="total">Загальний банк (Сума 1 + 2)</option>
-                <option value="fixed1">Фіксована ставка на Плече 1</option>
-            </select>
+    <div class="form-group">
+        <label>Ставка на Команду 1 ($):</label>
+        <input type="number" id="stake1" value="10" step="any" oninput="calculate()">
+    </div>
+
+    <div class="checkbox-card" onclick="toggleCheckbox(event)">
+        <input type="checkbox" id="isFreebet" onchange="calculate()">
+        <label for="isFreebet">Це фрібет (Freebet)</label>
+    </div>
+
+    <div class="form-group">
+        <label>Ціна Команди 1 (напр. 0.50 або 50):</label>
+        <input type="number" id="price1" value="0.50" step="any" oninput="calculate()">
+    </div>
+
+    <div class="form-group">
+        <label>Ціна Команди 2 (напр. 0.40 або 40):</label>
+        <input type="number" id="price2" value="0.40" step="any" oninput="calculate()">
+    </div>
+
+    <div class="results-box">
+        <div class="result-row">
+            <span class="label-text">Ставка на Команду 2:</span>
+            <span class="val" id="resStake2">$0.00</span>
+        </div>
+        <div class="result-row">
+            <span class="label-text">Власні витрати:</span>
+            <span class="val" id="resSpent">$0.00</span>
+        </div>
+        <div class="result-row">
+            <span class="label-text">Гарантована виплата:</span>
+            <span class="val" id="resPayout">$0.00</span>
+        </div>
+        <div class="result-row">
+            <span class="label-text">Чистий прибуток:</span>
+            <span class="val green" id="resProfit">$0.00</span>
+        </div>
+        <div class="result-row">
+            <span class="label-text">ROI від витрат:</span>
+            <span class="val green" id="resRoi">0.00%</span>
         </div>
     </div>
 
-    <label id="stakeLabel">Загальна сума інвестиції ($):</label>
-    <input type="number" id="mainStake" value="100" step="any" oninput="calculate()">
+    <div class="disclaimer">* Розрахунок без урахування комісій платформи</div>
 
-    <!-- ПЛЕЧЕ 1 -->
-    <div class="outcome-box">
-        <h3>Плече 1 (Перша ставка)</h3>
-        <div class="row">
-            <div class="col">
-                <label>Коефіцієнт:</label>
-                <input type="number" id="k1" value="2.10" step="0.01" oninput="calculate()">
-            </div>
-            <div class="col">
-                <label>Комісія (%):</label>
-                <input type="number" id="comm1" value="0" step="0.1" oninput="calculate()">
-            </div>
+    <!-- Нижній блок з логотипом та кнопкою -->
+    <div class="footer-card">
+        <div class="avatar-wrapper">
+            <!-- Вкажи тут шлях до своєї аватарки/логотипу (напр. logo.png) -->
+            <img src="logo.png" alt="Logo" class="avatar-img" onerror="this.src='https://via.placeholder.com/58/000000/00ff7f?text=%F0%9F%8E%81'">
         </div>
-        <label>Тип коштів:</label>
-        <select id="type1" onchange="calculate()">
-            <option value="real">Власні кошти</option>
-            <option value="freebet">Фрібет (Без повернення тіла)</option>
-        </select>
-    </div>
-
-    <!-- ПЛЕЧЕ 2 -->
-    <div class="outcome-box">
-        <h3>Плече 2 (Протилежна ставка)</h3>
-        <div class="row">
-            <div class="col">
-                <label>Коефіцієнт:</label>
-                <input type="number" id="k2" value="2.05" step="0.01" oninput="calculate()">
-            </div>
-            <div class="col">
-                <label>Комісія (%):</label>
-                <input type="number" id="comm2" value="0" step="0.1" oninput="calculate()">
-            </div>
-        </div>
-        <label>Тип коштів:</label>
-        <select id="type2" onchange="calculate()">
-            <option value="real">Власні кошти</option>
-            <option value="freebet">Фрібет (Без повернення тіла)</option>
-        </select>
-    </div>
-
-    <!-- РЕЗУЛЬТАТИ -->
-    <div class="result-box">
-        <div id="statusBadge" class="badge badge-success">Розрахунок...</div>
-        
-        <div class="result-item">
-            <span>Ставка на Плече 1:</span>
-            <span class="val" id="resStake1">0.00 $</span>
-        </div>
-        <div class="result-item">
-            <span>Ставка на Плече 2:</span>
-            <span class="val" id="resStake2">0.00 $</span>
-        </div>
-        <hr style="border-color: #444; margin: 10px 0;">
-        <div class="result-item">
-            <span>Витрачено своїх коштів:</span>
-            <span class="val" id="resTotalCost">0.00 $</span>
-        </div>
-        <div class="result-item">
-            <span>Чистий прибуток:</span>
-            <span class="val" id="resProfit">0.00 $</span>
-        </div>
-        <div class="result-item">
-            <span>ROI / Дохідність:</span>
-            <span class="val" id="resROI">0.00 %</span>
-        </div>
+        <a href="https://t.me/airdrop_crypto" target="_blank" class="tg-btn">by @airdrop_crypto</a>
     </div>
 </div>
 
 <script>
+    function toggleCheckbox(e) {
+        if (e.target.tagName !== 'INPUT') {
+            const cb = document.getElementById('isFreebet');
+            cb.checked = !cb.checked;
+            calculate();
+        }
+    }
+
+    function parsePrice(val) {
+        let p = parseFloat(val) || 0;
+        if (p > 1) p = p / 100; // Підтримка вводу 50 замість 0.50
+        return p;
+    }
+
     function calculate() {
-        const mode = document.getElementById('calcMode').value;
-        const mainInput = parseFloat(document.getElementById('mainStake').value) || 0;
-        
-        const k1 = parseFloat(document.getElementById('k1').value) || 0;
-        const comm1 = (parseFloat(document.getElementById('comm1').value) || 0) / 100;
-        const type1 = document.getElementById('type1').value;
+        const stake1 = parseFloat(document.getElementById('stake1').value) || 0;
+        const price1 = parsePrice(document.getElementById('price1').value);
+        const price2 = parsePrice(document.getElementById('price2').value);
+        const isFreebet = document.getElementById('isFreebet').checked;
 
-        const k2 = parseFloat(document.getElementById('k2').value) || 0;
-        const comm2 = (parseFloat(document.getElementById('comm2').value) || 0) / 100;
-        const type2 = document.getElementById('type2').value;
-
-        document.getElementById('stakeLabel').innerText = mode === 'total' 
-            ? 'Загальна сума інвестиції ($):' 
-            : 'Сума ставки / розмір фрібету на Плече 1 ($):';
-
-        if (k1 <= 1 || k2 <= 1) return;
-
-        let stake1 = 0;
-        let stake2 = 0;
-        let ownSpent = 0;
-        let profit = 0;
-
-        if (type1 === 'real' && type2 === 'real') {
-            const effK1 = 1 + (k1 - 1) * (1 - comm1);
-            const effK2 = 1 + (k2 - 1) * (1 - comm2);
-            const arbPercent = (1 / effK1) + (1 / effK2);
-
-            if (mode === 'total') {
-                stake1 = (mainInput * (1 / effK1)) / arbPercent;
-                stake2 = (mainInput * (1 / effK2)) / arbPercent;
-                ownSpent = mainInput;
-            } else {
-                stake1 = mainInput;
-                stake2 = (stake1 * effK1) / effK2;
-                ownSpent = stake1 + stake2;
-            }
-
-            const payout1 = stake1 * effK1;
-            profit = payout1 - ownSpent;
-
-        } else if (type1 === 'freebet' && type2 === 'real') {
-            const netReturn1 = mainInput * (k1 - 1) * (1 - comm1);
-            const effK2 = 1 + (k2 - 1) * (1 - comm2);
-
-            stake1 = mainInput;
-            stake2 = netReturn1 / effK2;
-            ownSpent = stake2;
-            profit = netReturn1 - stake2;
-
-        } else if (type1 === 'real' && type2 === 'freebet') {
-            const effK1 = 1 + (k1 - 1) * (1 - comm1);
-            const netReturn2_per_unit = (k2 - 1) * (1 - comm2);
-
-            stake1 = mainInput;
-            stake2 = (stake1 * effK1) / netReturn2_per_unit;
-            ownSpent = stake1;
-            profit = (stake1 * effK1) - ownSpent;
-
-        } else {
-            stake1 = mainInput;
-            const net1 = stake1 * (k1 - 1) * (1 - comm1);
-            const net2_per_unit = (k2 - 1) * (1 - comm2);
-            stake2 = net1 / net2_per_unit;
-            ownSpent = 0;
-            profit = net1;
+        if (price1 <= 0 || price2 <= 0 || stake1 <= 0) {
+            document.getElementById('resStake2').innerText = "$0.00";
+            document.getElementById('resSpent').innerText = "$0.00";
+            document.getElementById('resPayout').innerText = "$0.00";
+            document.getElementById('resProfit').innerText = "$0.00";
+            document.getElementById('resRoi').innerText = "0.00%";
+            return;
         }
 
+        // Кількість акцій/паїв при виграші першої команди
+        const shares = stake1 / price1;
+        const payout = shares; // 1 акція = $1 виплати
+
+        // Необхідна ставка на команду 2, щоб отримати таку ж виплату
+        const stake2 = payout * price2;
+
+        // Власні витрати
+        const ownSpent = isFreebet ? stake2 : (stake1 + stake2);
+
+        // Чистий прибуток
+        const profit = payout - ownSpent;
+
+        // ROI
         const roi = ownSpent > 0 ? (profit / ownSpent) * 100 : (profit > 0 ? 100 : 0);
 
-        document.getElementById('resStake1').innerText = stake1.toFixed(2) + ' $';
-        document.getElementById('resStake2').innerText = stake2.toFixed(2) + ' $';
-        document.getElementById('resTotalCost').innerText = ownSpent.toFixed(2) + ' $';
-        
+        // Оновлення UI
+        document.getElementById('resStake2').innerText = "$" + stake2.toFixed(2);
+        document.getElementById('resSpent').innerText = "$" + ownSpent.toFixed(2);
+        document.getElementById('resPayout').innerText = "$" + payout.toFixed(2);
+
         const profitEl = document.getElementById('resProfit');
-        profitEl.innerText = (profit >= 0 ? '+' : '') + profit.toFixed(2) + ' $';
-        profitEl.className = 'val ' + (profit >= 0 ? 'profit-pos' : 'profit-neg');
+        profitEl.innerText = "$" + profit.toFixed(2);
+        profitEl.className = "val " + (profit >= 0 ? "green" : "red");
 
-        const roiEl = document.getElementById('resROI');
-        roiEl.innerText = roi.toFixed(2) + ' %';
-        roiEl.className = 'val ' + (profit >= 0 ? 'profit-pos' : 'profit-neg');
-
-        const badge = document.getElementById('statusBadge');
-        if (profit > 0) {
-            badge.innerText = `✅ Гарантований прибуток: +${profit.toFixed(2)}$`;
-            badge.className = 'badge badge-success';
-        } else if (Math.abs(profit) < 0.01) {
-            badge.innerText = `⚖️ Беззбиткова позиція (0.00$)`;
-            badge.className = 'badge badge-success';
-        } else {
-            badge.innerText = `⚠️ Мінусова вилка (Збиток: ${profit.toFixed(2)}$)`;
-            badge.className = 'badge badge-danger';
-        }
+        const roiEl = document.getElementById('resRoi');
+        roiEl.innerText = roi.toFixed(2) + "%";
+        roiEl.className = "val " + (profit >= 0 ? "green" : "red");
     }
 
     calculate();
