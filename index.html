@@ -2,7 +2,7 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Калькулятор Вилок</title>
     <style>
         * {
@@ -10,50 +10,55 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
 
-        body {
+        html, body {
+            height: 100vh;
+            margin: 0;
+            padding: 0;
             background-color: #121212;
             color: #ffffff;
-            margin: 0;
-            padding: 20px 15px;
+            overflow: hidden; /* Заборона вертикальної прокрутки */
             display: flex;
             justify-content: center;
+            align-items: center;
         }
 
         .container {
             width: 100%;
-            max-width: 420px;
+            max-width: 400px;
+            padding: 10px 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
         h1.title {
             text-align: center;
             color: #f0b90b;
-            font-size: 22px;
+            font-size: 19px;
             font-weight: 700;
-            margin-top: 0;
-            margin-bottom: 20px;
+            margin: 0 0 8px 0;
         }
 
         .form-group {
-            margin-bottom: 16px;
+            margin-bottom: 8px;
         }
 
         label {
             display: block;
             color: #b7b7b7;
-            font-size: 14px;
-            margin-bottom: 8px;
+            font-size: 12px;
+            margin-bottom: 4px;
         }
 
         input[type="number"] {
             width: 100%;
-            padding: 14px 16px;
+            padding: 8px 12px;
             background-color: #242424;
             border: 1px solid #333333;
-            border-radius: 12px;
+            border-radius: 8px;
             color: #ffffff;
-            font-size: 16px;
+            font-size: 14px;
             outline: none;
-            transition: border-color 0.2s;
         }
 
         input[type="number"]:focus {
@@ -63,18 +68,18 @@
         .checkbox-card {
             background-color: #242424;
             border: 1px solid #333333;
-            border-radius: 12px;
-            padding: 14px 16px;
+            border-radius: 8px;
+            padding: 8px 12px;
             display: flex;
             align-items: center;
-            gap: 12px;
-            margin-bottom: 16px;
+            gap: 10px;
+            margin-bottom: 8px;
             cursor: pointer;
         }
 
         .checkbox-card input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             accent-color: #f0b90b;
             cursor: pointer;
         }
@@ -83,23 +88,23 @@
             margin-bottom: 0;
             color: #ffffff;
             font-weight: 600;
-            font-size: 15px;
+            font-size: 13px;
             cursor: pointer;
         }
 
         .results-box {
             background-color: #222222;
-            border-radius: 16px;
-            padding: 18px 20px;
-            margin-top: 20px;
+            border-radius: 12px;
+            padding: 10px 14px;
+            margin-top: 6px;
         }
 
         .result-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 12px;
-            font-size: 15px;
+            margin-bottom: 6px;
+            font-size: 13px;
         }
 
         .result-row:last-child {
@@ -112,23 +117,18 @@
 
         .result-row .val {
             font-weight: 700;
-            font-size: 16px;
+            font-size: 14px;
             color: #ffffff;
         }
 
-        .val.green {
-            color: #22c55e;
-        }
-
-        .val.red {
-            color: #ef4444;
-        }
+        .val.green { color: #22c55e; }
+        .val.red { color: #ef4444; }
 
         .disclaimer {
             text-align: center;
             color: #777777;
-            font-size: 12px;
-            margin-top: 14px;
+            font-size: 11px;
+            margin-top: 6px;
             font-style: italic;
         }
 
@@ -139,10 +139,10 @@
             justify-content: space-between;
             background-color: #0d1926;
             border: 1px solid #1c3b5e;
-            border-radius: 20px;
-            padding: 10px 18px;
-            margin-top: 25px;
-            box-shadow: 0 0 15px rgba(36, 161, 222, 0.12);
+            border-radius: 16px;
+            padding: 6px 14px;
+            margin-top: 10px;
+            box-shadow: 0 0 12px rgba(36, 161, 222, 0.12);
         }
 
         .avatar-wrapper {
@@ -152,27 +152,23 @@
         }
 
         .avatar-img {
-            width: 58px;  /* Збільшений розмір іконки */
-            height: 58px;
+            width: 52px; /* Збільшена іконка */
+            height: 52px;
             border-radius: 50%;
             object-fit: cover;
             border: 2px solid #24a1de;
-            background-color: #000;
+            background-color: #000000;
+            display: block;
         }
 
         .tg-btn {
             background-color: #24a1de;
             color: #ffffff;
             text-decoration: none;
-            padding: 10px 18px;
-            border-radius: 20px;
+            padding: 8px 14px;
+            border-radius: 16px;
             font-weight: 700;
-            font-size: 14px;
-            transition: background-color 0.2s, transform 0.1s;
-        }
-
-        .tg-btn:active {
-            transform: scale(0.97);
+            font-size: 13px;
         }
     </style>
 </head>
@@ -204,33 +200,32 @@
     <div class="results-box">
         <div class="result-row">
             <span class="label-text">Ставка на Команду 2:</span>
-            <span class="val" id="resStake2">$0.00</span>
+            <span class="val" id="resStake2">$8.00</span>
         </div>
         <div class="result-row">
             <span class="label-text">Власні витрати:</span>
-            <span class="val" id="resSpent">$0.00</span>
+            <span class="val" id="resSpent">$18.00</span>
         </div>
         <div class="result-row">
             <span class="label-text">Гарантована виплата:</span>
-            <span class="val" id="resPayout">$0.00</span>
+            <span class="val" id="resPayout">$20.00</span>
         </div>
         <div class="result-row">
             <span class="label-text">Чистий прибуток:</span>
-            <span class="val green" id="resProfit">$0.00</span>
+            <span class="val green" id="resProfit">$2.00</span>
         </div>
         <div class="result-row">
             <span class="label-text">ROI від витрат:</span>
-            <span class="val green" id="resRoi">0.00%</span>
+            <span class="val green" id="resRoi">11.11%</span>
         </div>
     </div>
 
     <div class="disclaimer">* Розрахунок без урахування комісій платформи</div>
 
-    <!-- Нижній блок з логотипом та кнопкою -->
+    <!-- Нижній блок автора -->
     <div class="footer-card">
         <div class="avatar-wrapper">
-            <!-- Вкажи тут шлях до своєї аватарки/логотипу (напр. logo.png) -->
-            <img src="logo.png" alt="Logo" class="avatar-img" onerror="this.src='https://via.placeholder.com/58/000000/00ff7f?text=%F0%9F%8E%81'">
+            <img src="logo.png.jpg" alt="Logo" class="avatar-img">
         </div>
         <a href="https://t.me/airdrop_crypto" target="_blank" class="tg-btn">by @airdrop_crypto</a>
     </div>
@@ -247,7 +242,7 @@
 
     function parsePrice(val) {
         let p = parseFloat(val) || 0;
-        if (p > 1) p = p / 100; // Підтримка вводу 50 замість 0.50
+        if (p > 1) p = p / 100;
         return p;
     }
 
@@ -266,23 +261,13 @@
             return;
         }
 
-        // Кількість акцій/паїв при виграші першої команди
         const shares = stake1 / price1;
-        const payout = shares; // 1 акція = $1 виплати
-
-        // Необхідна ставка на команду 2, щоб отримати таку ж виплату
+        const payout = shares;
         const stake2 = payout * price2;
-
-        // Власні витрати
         const ownSpent = isFreebet ? stake2 : (stake1 + stake2);
-
-        // Чистий прибуток
         const profit = payout - ownSpent;
-
-        // ROI
         const roi = ownSpent > 0 ? (profit / ownSpent) * 100 : (profit > 0 ? 100 : 0);
 
-        // Оновлення UI
         document.getElementById('resStake2').innerText = "$" + stake2.toFixed(2);
         document.getElementById('resSpent').innerText = "$" + ownSpent.toFixed(2);
         document.getElementById('resPayout').innerText = "$" + payout.toFixed(2);
